@@ -31,16 +31,18 @@ class TwitterService {
     @PostConstruct
     void init() {
         twitter = TwitterFactory.getSingleton()
-        log.debug("access token: " + twitterAccessToken);
         AccessToken accessToken = new AccessToken(twitterAccessToken, twitterAccessTokenSecret);
         twitter.setOAuthConsumer(twitterConsumerKey, twitterConsumerSecret)
         twitter.setOAuthAccessToken(accessToken)
+        log.debug("initialized by access token")
     }
 
-    def search(String query) throws Exception {
-        if (query == null || query.isEmpty()) throw new IllegalArgumentException("query can't be empty")
-        QueryResult result = twitter.search(new Query(query))
-        log.debug("query: " + query + ", count: " + result.count);
+    def search(String searchQuery, Long maxId) throws Exception {
+        if (!searchQuery?.trim()) throw new IllegalArgumentException("search query can't be empty")
+        final Query query = new Query(searchQuery)
+        if (maxId) query.setMaxId(maxId)
+        final QueryResult result = twitter.search(query)
+        log.debug("query: " + searchQuery + ", maxId: " + maxId + ", count: " + result.count);
         return result
     }
 }

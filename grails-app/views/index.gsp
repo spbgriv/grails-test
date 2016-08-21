@@ -204,7 +204,7 @@
                                     </div>
                                 </div>
                                 <div className="row" style={{marginBottom: 20}}>
-                                    <div className="col-sm-10">
+                                    <div className="col-sm-9">
                                         <input type="text" className="form-control"
                                                     onChange={this.queryChange} value={this.state.query}/>
                                     </div>

@@ -3,9 +3,11 @@ package com.myapp
 import com.myapp.auth.Role
 import com.myapp.auth.User
 import com.myapp.auth.UserRole
+import grails.transaction.Transactional
 
 import javax.annotation.PostConstruct
 
+@Transactional
 class RegisterService {
 
     private Role consumerRole;

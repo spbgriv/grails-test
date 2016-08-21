@@ -147,9 +147,14 @@ grails:
                 - {pattern: '/**/favicon.ico', filters: 'none'}
                   #Stateless chain
                 - {pattern: '/api/**', filters: 'JOINED_FILTERS,-anonymousAuthenticationFilter,-exceptionTranslationFilter,-authenticationProcessingFilter,-securityContextPersistenceFilter,-rememberMeAuthenticationFilter'}
+            rest.login.active: true
+            rest.login.endpointUrl: '/api/login'
+            rest.login.failureStatusCode: 401
             rest.login.useJsonCredentials: true
+            rest.logout.endpointUrl: '/api/logout'
+            rest.token.validation.headerName: 'X-Auth-Token'
             rest.token.storage.useGorm: true
-            rest.token.storage.gorm.tokenDomainClassName: 'com.example.auth.AuthenticationToken'
+            rest.token.storage.gorm.tokenDomainClassName: 'com.myapp.auth.AuthenticationToken'
 
 endpoints:
     jmx:

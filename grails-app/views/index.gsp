@@ -1,79 +1,239 @@
-<!doctype html>
-<html>
 <head>
-    <meta name="layout" content="main"/>
-    <title>Welcome to Grails</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 
-    <asset:link rel="icon" href="favicon.ico" type="image/x-ico" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="http://fb.me/react-0.13.0.js"></script>
+    <script src="http://fb.me/JSXTransformer-0.13.0.js"></script>
+    <script type="text/jsx">
+
+        var Login = React.createClass({
+            getInitialState: function () {
+                return {tokenInfo: JSON.parse(localStorage.getItem('tokenInfo') || '{}')};
+            },
+
+            showError: function (error) {
+                this.setState({error: error})
+            },
+
+            clearError: function () {
+                this.setState({error: ""})
+            },
+
+            saveTokenInfo: function (tokenInfo) {
+                localStorage.setItem('tokenInfo', JSON.stringify(tokenInfo));
+                this.setState({tokenInfo: tokenInfo});
+            },
+
+            logout: function() {
+                this.saveTokenInfo("");
+                this.setState({
+                    query: '',
+                    tweets: ''
+                });
+            },
+
+            login: function (e) {
+                var self;
+
+                e.preventDefault();
+                self = this;
+
+                var data = {
+                    username: this.state.login,
+                    password: this.state.pass
+                };
+                console.log(data);
+                $.ajax({
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    url: '/api/login',
+                    data: JSON.stringify(data)
+                })
+                        .done(function (data) {
+                            console.log(data);
+                            self.saveTokenInfo(data);
+                            self.clearForm();
+                            self.clearError();
+                        })
+                        .fail(function (jqXhr) {
+                            self.showError("Failed to login.")
+                        });
+
+            },
+
+            register: function (e) {
+                var self;
+
+                e.preventDefault();
+                self = this;
+
+                var data = {
+                    username: this.state.login,
+                    password: this.state.pass
+                };
+                $.ajax({
+                    type: 'POST',
+                    url: '/register/consumer',
+                    data: data
+                })
+                        .done(function (data) {
+                            console.log(data);
+                            if(data.success) {
+                                self.clearError();
+                            } else {
+                                self.showError(data.message);
+                            }
+                        })
+                        .fail(function (jqXhr) {
+                            self.showError('Failed to register.');
+                        });
+
+            },
+
+            search: function (e) {
+                e.preventDefault();
+                this.setState({tweets: ''});
+                this.searchAction();
+            },
+
+            loadMore: function (e) {
+                e.preventDefault();
+                this.searchAction(this.state.nextMaxId);
+            },
+
+
+            searchAction: function (nextMaxId) {
+                var self = this;
+
+                var data = {
+                    q: this.state.query,
+                    maxId: nextMaxId
+                };
+                console.log(data);
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/api/twitter/search',
+                    headers: {
+                        'Authorization':this.state.tokenInfo.token_type + ' ' + this.state.tokenInfo.access_token,
+                    },
+                    data: data
+                })
+                        .done(function (data) {
+                            console.log(data);
+                            if(data.tweets) {
+                                self.setState({
+                                    tweets: (self.state.tweets) ? self.state.tweets.concat(data.tweets) : data.tweets,
+                                    hasNext: data.hasNext,
+                                    nextMaxId: data.nextMaxId
+                                });
+                                self.clearError();
+                            }
+                        })
+                        .fail(function (jqXhr) {
+                            self.showError('Failed to load tweets.');
+                        });
+
+            },
+
+            clearForm: function () {
+                this.setState({
+                    login: "",
+                    pass: ""
+                });
+            },
+
+            loginChange: function (e) {
+                this.setState({login: e.target.value})
+            },
+
+            passwordChange: function (e) {
+                this.setState({pass: e.target.value})
+            },
+
+            queryChange: function (e) {
+                this.setState({query: e.target.value})
+            },
+
+            render: function () {
+                return (
+                        <div className="container" style={{paddingTop: 40, width: 500}}>
+                            {this.state.error &&
+                            <div className="alert alert-danger">
+                                {this.state.error}
+                            </div>}
+                            {!this.state.tokenInfo &&
+                            <form onSubmit={this.submit}>
+                                <div className="form-group row">
+                                    <label for="login" className="col-sm-2 col-form-label">Login:</label>
+                                    <div className="col-sm-10">
+                                        <input type="text" className="form-control" id="login"
+                                               onChange={this.loginChange} value={this.state.login}/>
+                                    </div>
+                                </div>
+                                <div className="form-group row">
+                                    <label for="pwd" className="col-sm-2 col-form-label">Password:</label>
+                                    <div className="col-sm-10">
+                                        <input type="password" className="form-control" id="pwd"
+                                               onChange={this.passwordChange} value={this.state.pass}/>
+                                    </div>
+                                </div>
+                                <div className="row-fluid centered">
+                                    <button onClick={this.login} className="btn btn-primary" style={{marginRight: 20}}>Login</button>
+                                    <button onClick={this.register} className="btn btn-primary">Register</button>
+                                </div>
+                            </form>}
+                            {this.state.tokenInfo &&
+                            <div>
+                                <div className="row text-center">
+                                    <div className="row-fluid">
+                                        <label style={{marginRight: 20}}><strong>{'You logged as: ' + this.state.tokenInfo.username}</strong></label>
+                                        <a onClick={this.logout} className="btn btn-primary btn-xs">Logout</a>
+                                    </div>
+                                </div>
+                                <div className="row" style={{marginBottom: 20}}>
+                                    <div className="col-sm-10">
+                                        <input type="text" className="form-control"
+                                                    onChange={this.queryChange} value={this.state.query}/>
+                                    </div>
+                                    <div className="col-sm-2">
+                                        <button onClick={this.search} className="btn btn-primary">Search</button>
+                                    </div>
+                                </div>
+                                {this.state.tweets &&
+                                    this.state.tweets.map(function(tweet){
+                                        return <div className="panel panel-info">
+                                            <div className="panel-heading">
+                                                {tweet.user.miniProfileImageURL &&
+                                                <img src={tweet.user.miniProfileImageURL} style={{marginRight: 10}}/>
+                                                }
+                                                <label>{tweet.user.screenName}</label>
+                                            </div>
+                                            <div className="panel-body">tweets
+                                                <p>{tweet.text}</p>
+                                            </div>
+                                        </div>;
+                                    })
+                                }
+                                {this.state.tweets && this.state.hasNext && this.state.nextMaxId &&
+                                    <div className="text-center" style={{marginBottom: 20}}>
+                                        <button onClick={this.loadMore} className="btn btn-primary">Load more</button>
+                                    </div>
+                                }
+                             </div>
+
+                            }
+                        </div>
+
+                );
+            }
+        });
+
+        React.render(<Login/>, document.body);
+    </script>
 </head>
+
 <body>
-    <content tag="nav">
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Application Status <span class="caret"></span></a>
-            <ul class="dropdown-menu">
-                <li><a href="#">Environment: ${grails.util.Environment.current.name}</a></li>
-                <li><a href="#">App profile: ${grailsApplication.config.grails?.profile}</a></li>
-                <li><a href="#">App version:
-                    <g:meta name="info.app.version"/></a>
-                </li>
-                <li role="separator" class="divider"></li>
-                <li><a href="#">Grails version:
-                    <g:meta name="info.app.grailsVersion"/></a>
-                </li>
-                <li><a href="#">Groovy version: ${GroovySystem.getVersion()}</a></li>
-                <li><a href="#">JVM version: ${System.getProperty('java.version')}</a></li>
-                <li role="separator" class="divider"></li>
-                <li><a href="#">Reloading active: ${grails.util.Environment.reloadingAgentEnabled}</a></li>
-            </ul>
-        </li>
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Artefacts <span class="caret"></span></a>
-            <ul class="dropdown-menu">
-                <li><a href="#">Controllers: ${grailsApplication.controllerClasses.size()}</a></li>
-                <li><a href="#">Domains: ${grailsApplication.domainClasses.size()}</a></li>
-                <li><a href="#">Services: ${grailsApplication.serviceClasses.size()}</a></li>
-                <li><a href="#">Tag Libraries: ${grailsApplication.tagLibClasses.size()}</a></li>
-            </ul>
-        </li>
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Installed Plugins <span class="caret"></span></a>
-            <ul class="dropdown-menu">
-                <g:each var="plugin" in="${applicationContext.getBean('pluginManager').allPlugins}">
-                    <li><a href="#">${plugin.name} - ${plugin.version}</a></li>
-                </g:each>
-            </ul>
-        </li>
-    </content>
-
-    <div class="svg" role="presentation">
-        <div class="grails-logo-container">
-            <asset:image src="grails-cupsonly-logo-white.svg" class="grails-logo"/>
-        </div>
-    </div>
-
-    <div id="content" role="main">
-        <section class="row colset-2-its">
-            <h1>Welcome to Grails</h1>
-
-            <p>
-                Congratulations, you have successfully started your first Grails application! At the moment
-                this is the default page, feel free to modify it to either redirect to a controller or display
-                whatever content you may choose. Below is a list of controllers that are currently deployed in
-                this application, click on each to execute its default action:
-            </p>
-
-            <div id="controllers" role="navigation">
-                <h2>Available Controllers:</h2>
-                <ul>
-                    <g:each var="c" in="${grailsApplication.controllerClasses.sort { it.fullName } }">
-                        <li class="controller">
-                            <g:link controller="${c.logicalPropertyName}">${c.fullName}</g:link>
-                        </li>
-                    </g:each>
-                </ul>
-            </div>
-        </section>
-    </div>
-
 </body>
-</html>

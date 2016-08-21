@@ -19,7 +19,7 @@ class TwitterController {
 
             final QueryResult result = twitterService.search(query, maxId)
 
-            render contentType: "text/json", text: new TwitterSearchResponse(result.getTweets(), (result.hasNext()) ? result.nextQuery().maxId : null, result.hasNext()) as JSON
+            render contentType: "text/json", text: new TwitterSearchResponse(result.getTweets(), (result.hasNext()) ? result.nextQuery().maxId : null) as JSON
 
         }
     }

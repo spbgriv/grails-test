@@ -62,6 +62,7 @@ dependencies {
     testRuntime "net.sourceforge.htmlunit:htmlunit:2.18"
     compile 'org.grails.plugins:spring-security-core:3.0.3'
     compile "org.grails.plugins:spring-security-rest:2.0.0.M2"
+//    compile "org.grails.plugins:spring-security-rest-gorm:2.0.0.M2"
     compile "org.twitter4j:twitter4j-core:4.0.4"
 //    compile "org.grails.plugins:jsx-asset-pipeline:2.12.1.0"
 }

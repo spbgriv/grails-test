@@ -53,10 +53,8 @@
                 };
                 $.ajax({
                     type: 'POST',
-                    contentType: "application/json; charset=utf-8",
-                    dataType: "json",
                     url: '/api/login',
-                    data: JSON.stringify(data)
+                    data: data
                 })
                         .done(function (data) {
                             self.saveTokenInfo(data);
@@ -122,16 +120,14 @@
                     type: 'POST',
                     url: '/api/twitter/search',
                     headers: {
-                        'Authorization':this.state.tokenInfo.token_type + ' ' + this.state.tokenInfo.access_token,
+                        'Authorization':this.state.tokenInfo.token_type + ' ' + this.state.tokenInfo.access_token
                     },
                     data: data
                 })
                         .done(function (data) {
-                            console.log(data);
                             if(data.tweets) {
                                 self.setState({
                                     tweets: (self.state.tweets) ? self.state.tweets.concat(data.tweets) : data.tweets,
-                                    hasNext: data.hasNext,
                                     nextMaxId: data.nextMaxId
                                 });
                                 self.clearError();
@@ -139,7 +135,11 @@
                             }
                         })
                         .fail(function (jqXhr) {
-                            self.showError('Failed to load tweets.');
+                            if (jqXhr.status === 401) {
+                                self.logout();
+                            } else {
+                                self.showError('Failed to load tweets.');
+                            }
                         });
 
             },
@@ -227,7 +227,7 @@
                                         </div>;
                                     })
                                 }
-                                {this.state.tweets && this.state.hasNext && this.state.nextMaxId &&
+                                {this.state.tweets && this.state.nextMaxId &&
                                     <div className="text-center" style={{marginBottom: 20}}>
                                         <button onClick={this.loadMore} className="btn btn-primary">Load more</button>
                                     </div>

@@ -150,10 +150,11 @@ grails:
             rest.login.active: true
             rest.login.endpointUrl: '/api/login'
             rest.login.failureStatusCode: 401
-            rest.login.useJsonCredentials: true
+            rest.login.useJsonCredentials: false
+            rest.login.useRequestParamsCredentials: true
             rest.logout.endpointUrl: '/api/logout'
             rest.token.validation.headerName: 'X-Auth-Token'
-            rest.token.storage.useGorm: true
+            rest.token.storage.useGorm: false
             rest.token.storage.gorm.tokenDomainClassName: 'com.myapp.auth.AuthenticationToken'
 
 endpoints:

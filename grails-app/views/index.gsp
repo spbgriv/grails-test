@@ -12,6 +12,14 @@
                 return {tokenInfo: JSON.parse(localStorage.getItem('tokenInfo') || '{}')};
             },
 
+            showInfo: function (info) {
+                var self = this;
+                this.setState({info: info});
+                setTimeout(function() {
+                    self.setState({info: ''})
+                }, 4000);
+            },
+
             showError: function (error) {
                 this.setState({error: error})
             },
@@ -43,7 +51,6 @@
                     username: this.state.login,
                     password: this.state.pass
                 };
-                console.log(data);
                 $.ajax({
                     type: 'POST',
                     contentType: "application/json; charset=utf-8",
@@ -52,7 +59,6 @@
                     data: JSON.stringify(data)
                 })
                         .done(function (data) {
-                            console.log(data);
                             self.saveTokenInfo(data);
                             self.clearForm();
                             self.clearError();
@@ -79,9 +85,9 @@
                     data: data
                 })
                         .done(function (data) {
-                            console.log(data);
                             if(data.success) {
                                 self.clearError();
+                                self.showInfo('User successfully register, please login for next action.');
                             } else {
                                 self.showError(data.message);
                             }
@@ -111,7 +117,6 @@
                     q: this.state.query,
                     maxId: nextMaxId
                 };
-                console.log(data);
 
                 $.ajax({
                     type: 'POST',
@@ -130,6 +135,7 @@
                                     nextMaxId: data.nextMaxId
                                 });
                                 self.clearError();
+                                if(!nextMaxId && !data.tweets.length) self.showInfo('No result, try another query.');
                             }
                         })
                         .fail(function (jqXhr) {
@@ -160,6 +166,10 @@
             render: function () {
                 return (
                         <div className="container" style={{paddingTop: 40, width: 500}}>
+                            {this.state.info &&
+                            <div className="alert alert-success">
+                                {this.state.info}
+                            </div>}
                             {this.state.error &&
                             <div className="alert alert-danger">
                                 {this.state.error}

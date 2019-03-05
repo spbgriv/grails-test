@@ -65,6 +65,7 @@ dependencies {
 //    compile "org.grails.plugins:spring-security-rest-gorm:2.0.0.M2"
     compile "org.twitter4j:twitter4j-core:4.0.4"
 //    compile "org.grails.plugins:jsx-asset-pipeline:2.12.1.0"
+    compile 'com.github.jsimone:webapp-runner:8.5.11.3'
 }
 
 assets {
@@ -72,5 +73,16 @@ assets {
     minifyCss = true
 }
 
-task stage(dependsOn: ['build', 'clean'])
-build.mustRunAfter clean
+task stage() {
+    dependsOn clean, war
+}
+war.mustRunAfter clean
+
+task copyToLib(type: Copy) {
+    into "$buildDir/server"
+    from(configurations.compile) {
+        include "webapp-runner*"
+    }
+}
+
+stage.dependsOn(copyToLib)
